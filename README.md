@@ -1,22 +1,10 @@
-# Student Project Template [UNDER DEVELOPMENT]
 
-Please name your repository as follows:
-- use lower case
-- use underscores to separate tokens
-- if related to a larger project, start with the name of this project, followed by the name of your project (e.g. 'seco_image_classification')
-- in case of doubt ask your supervisors
-
-Please structure your repository as follows:
-
-- a folder **code** where you put... your code and your resources
-- a folder **report** where you put... your report and presentations
-- a **README**, with the following information:
 
 ### Basic information
 
-- name of student
-- names of supervisors
-- academic year
+- student: Chen Dina
+- supervisor: Yang Jie
+- academic year: 2022
 
 ### Introduction
 _brief introduction of the project_
