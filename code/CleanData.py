@@ -1,18 +1,20 @@
 import pandas as pd
 import re
+from sklearn.model_selection import train_test_split
 
 # Given the original Relativity data:
 #  1, select following columns: Artifact ID','From', 'To', 'Subject', 'First Line Review Decision', 'First Line Review Reason','Extracted Text'
 #  2, select rows where "First Line Review Decision" is not null. (extract labelled data)
 #  3, select emails whose reason for escalation is not "non-english".
+#  4, filter on languages. only work with English emails.
 def processRawData(df):
 
     df = df[['Artifact ID','From', 'To', 'Subject', 'First Line Review Decision', 'First Line Review Reason','Extracted Text']]
+             #'Docs_Languages', 'Docs_Languages::Language', 'Docs_Languages::Percentage']]
     df = df[df['First Line Review Decision'].notnull()]
     df = df[df['First Line Review Reason'] != 'NE (Non-English language communication)']
-
-    print(df.columns)
-    print(len(df.index))
+    #df['english'] = df.apply(lambda x: english(x), axis=1)
+    #data = df[df['english'] == 1]
 
     return df
 
@@ -101,6 +103,25 @@ def countPosInChain(row):
     prefixes = re.findall(r'From:.*\nSent:', text)
     return len(prefixes)+1
 
+def english(row):
+    languages = row["Docs_Languages::Language"].split(";")
+    percentages = row["Docs_Languages::Percentage"].split(";")
+
+    eng = -1
+    for i in range(len(languages)):
+        if (languages[i] == "English"):
+            eng = i
+            break
+
+    if(eng == -1):
+        return 0
+
+    percentage = int(percentages[eng])
+    if(percentage > 80):
+        return 1
+    else:
+        return 0
+
 # Encode the meta data (numercial/categorical features) into text.
 # Input data for transformer model (not multimodal transformer).
 
@@ -126,18 +147,53 @@ def concatTextInstance(row):
 
     return text
 
+def getSEPdata():
+    test = pd.read_csv("C:\\Users\\YG56QI\\email_monitoring\\data\\test.csv")
+    train = pd.read_csv("C:\\Users\\YG56QI\\email_monitoring\\data\\train.csv")
+
+    train = train[["labels", "concatText"]]
+    test = test[["labels", "concatText"]]
+    train = train.rename(columns={"concatText": "text"})
+    test = test.rename(columns={"concatText": "text"})
+    print(len(train.index))  # 17947
+    print(len(test.index))  # 4487
+    print(train.columns)
+    print(test.columns)
+
+    train.to_csv("C:\\Users\\YG56QI\\email_monitoring\\data\\SEPtrain.csv")
+    test.to_csv("C:\\Users\\YG56QI\\email_monitoring\\data\\SEPtest.csv")
+
 def main():
-    data = pd.read_csv("C:\\Users\\YG56QI\\email_monitoring\\data\\data.csv")
-    data = addFeatures(data)
-    print(data.columns)
-    #print(data.dtypes)
+    test = pd.read_csv("C:\\Users\\YG56QI\\email_monitoring\\data\\test.csv")
+    train = pd.read_csv("C:\\Users\\YG56QI\\email_monitoring\\data\\train.csv")
+
+    #23127
+
+    #data.to_csv("C:\\Users\\YG56QI\\email_monitoring\\data\\data.csv")
+    #data = addFeatures(data)
+    #print(data.columns)
+
+    #train, test = train_test_split(data, train_size=0.8)
 
 
-    data = data[data["senderPers"] == 1]
-    print(len(data.index))
+    #print(len(train.index))
+    #print(len(test.index))
+    #train.to_csv("C:\\Users\\YG56QI\\email_monitoring\\data\\train.csv")
+    #test.to_csv("C:\\Users\\YG56QI\\email_monitoring\\data\\test.csv")
+    #es = test[test["labels"] == 1]
+    #print(len(es.index))
+    #data = data[data["First Line Review Reason"] == "Mailing List"]
+    #print(len(data.index))
 
-    index = 11
-    print(data.iloc[index]["concatText"])
+
+
+
+    #index = 22
+    #print(data.iloc[index]["concatText"])
+
+
+    #data = data[data["First Line Review Reason"] == "Personal conversation"]
+
     #print(data.iloc[index]["Extracted Text"])
     #print(data.iloc[index]["First Line Review Reason"])
     #print(data.iloc[index]["senderPers"])
